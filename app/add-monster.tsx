@@ -52,6 +52,7 @@ const AddMonster = ({ route, navigation }) => {
         <View>
         <TextInput 
         style={styles.searchBar}
+        cursorColor="black"
         placeholder='Search'
         onChangeText={(value) => {
             search(value);            
@@ -60,7 +61,7 @@ const AddMonster = ({ route, navigation }) => {
         />
         <ScrollView style={styles.scrollView}>
             {monsters.map((monster, index) => 
-                <TouchableOpacity style={styles.monsterBox} onPress={() => navigation.navigate('Monster', { index: monster.index} )} key={monster.index}>
+                <TouchableOpacity style={styles.monsterBox} onPress={() => navigation.navigate('Monster', { index: monster.index} )} key={index}>
                     <Text style={styles.monsterName}>{monster.name}</Text>
                 </TouchableOpacity>
             )} 

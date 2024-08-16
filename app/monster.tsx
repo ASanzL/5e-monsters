@@ -1,4 +1,4 @@
-import  { Text, Image, View, StyleSheet, Button, ScrollView, TouchableOpacity } from 'react-native';
+import  { Text, Image, View, StyleSheet, Button, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -15,10 +15,12 @@ const styles = StyleSheet.create({
     },
     detailTextNormal: {
         fontSize: 17,
+        textAlign: "center"
     },
     detailTextBold: {
         fontWeight: "bold",
         fontSize: 17,
+        textAlign: "center"
     },
     line: {
         borderBottomColor: 'gray',
@@ -31,14 +33,18 @@ const styles = StyleSheet.create({
     },
     statCell: {
         flexDirection: "column",
-        width: "34%",
+        width: "33%",
+        margin: 1,
+        backgroundColor: "#e1eaf7",
+        marginTop: 5,
+        padding: 8,
+        borderRadius: 5,
     },
     action: {
         backgroundColor: "#e1eaf7",
         marginTop: 5,
-        padding: 3,
+        padding: 4,
         borderRadius: 5,
-        
     },
     multiattack: {
         padding: 3,
@@ -51,13 +57,14 @@ const Monster = ({ route, navigation }) => {
     const { index } = route.params;
     const [monster, setMonster] = useState();
     const [monsters, setMonsters] = useState();
-
+    
     const getMonster = async () => {
         let response = await fetch('https://www.dnd5eapi.co/api/monsters/' + index);
         response = await response.json();
+        navigation.setOptions({title: response.name })
         setMonster(response);
     }
-
+    
     useEffect(() => {
         getMonster();
         getMonsters();
@@ -202,7 +209,7 @@ const Monster = ({ route, navigation }) => {
             return returnArray.join(", ");
         }
 
-        const getActionJSX = (action) => {            
+        const getActionJSX = (action) => {                        
             if (action.name === "Multiattack" || action.dc) {
                 return (
                 <View style={styles.multiattack}>
@@ -225,6 +232,34 @@ const Monster = ({ route, navigation }) => {
             
         }
 
+        const getHPJSX = (hit_points, hit_points_roll) => {
+            return (
+                <TouchableOpacity style={styles.action} onPress={() => {
+                    navigation.navigate('Roller', { rollProp: hit_points_roll + "[hitpoints]"
+                     });
+                }}>
+                <DetailText title="Hit Points" desc={hit_points + " (" + hit_points_roll + ")"}  />
+            </TouchableOpacity>
+            );
+        }
+
+        const getStatJSX = (statAbbr, statScore) => {
+            let abilityScore = getAbilityScore(statScore);
+            console.log(abilityScore.score);
+            
+            return (
+                <TouchableOpacity style={styles.statCell} onPress={() => {
+                    navigation.navigate('Roller', { rollProp: "1d20 + " + abilityScore.score
+                     });
+                }}>
+                <Text style={styles.detailTextBold}>{ statAbbr }</Text>
+                <Text style={styles.detailTextNormal}>{ abilityScore.string }</Text>
+            </TouchableOpacity>
+            );
+        }
+
+
+
         return (
             <ScrollView>
                 <UpdateListButton />
@@ -235,20 +270,20 @@ const Monster = ({ route, navigation }) => {
                     <Line />
 
                     <DetailText title="Armor class" desc={acString}  />
-                    <DetailText title="Hit Points" desc={hpString}  />
+                    { getHPJSX(monster.hit_points, monster.hit_points_roll) }
                     <DetailText title="Speed" desc={speedArray.join(", ")}  />
 
                     <Line />
 
                     <View style={styles.statBox}>
-                        <StatCell name="STR" value={ getAbilityScore(monster.strength).string } />
-                        <StatCell name="DEX" value={ getAbilityScore(monster.dexterity).string } />
-                        <StatCell name="CON" value={ getAbilityScore(monster.constitution).string } />
+                        { getStatJSX("STR", monster.strength) }
+                        { getStatJSX("DEX", monster.dexterity) }
+                        { getStatJSX("CON", monster.constitution) }
                     </View>
                     <View style={styles.statBox}>
-                        <StatCell name="INT" value={ getAbilityScore(monster.intelligence).string } />
-                        <StatCell name="WIS" value={ getAbilityScore(monster.wisdom).string } />
-                        <StatCell name="CHA" value={ getAbilityScore(monster.charisma).string } />
+                        { getStatJSX("INT", monster.intelligence) }
+                        { getStatJSX("WIS", monster.wisdom) }
+                        { getStatJSX("CON", monster.charisma) }
                     </View>
 
                     <Line />
@@ -293,7 +328,7 @@ const Monster = ({ route, navigation }) => {
     } else {
         return (
             <View>
-                <Text>Loading...</Text>
+                <ActivityIndicator />
             </View>
         )
     }

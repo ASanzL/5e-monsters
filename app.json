@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "dnd",
+    "name": "5e monster helper",
     "slug": "dnd",
-    "version": "0.1.1",
+    "version": "0.1.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -16,12 +16,12 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.asanzl.dnd",
+      "versionCode": 5,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.asanzl.dnd",
-      "versionCode": 2
+        "backgroundColor": "#CC181F"
+      }
     },
     "web": {
       "bundler": "metro",

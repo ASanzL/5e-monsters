@@ -2,7 +2,7 @@ import  { Text, Image, View, StyleSheet, TouchableOpacity, ScrollView, Button, T
 import { useState, useEffect } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import { DiceRoller } from 'dice-roller-parser';
+import { DiceRoller, DiscordRollRenderer } from 'dice-roller-parser';
 
 
 
@@ -19,8 +19,13 @@ const styles = StyleSheet.create({
         margin: 20,
     },
     rollOutputDetailed: {
-        fontSize: 16,
+        fontSize: 18,
         marginLeft: 10,
+    },
+    rollOutputDetailedTitle: {
+        fontSize: 20,
+        marginLeft: 10,
+        fontWeight: "bold",
     },
   });
 
@@ -36,6 +41,9 @@ const Roller = ({ route, navigation }) => {
     const isFocused = useIsFocused();
     
     const diceRoller = new DiceRoller();
+    const renderer = new DiscordRollRenderer();
+    
+    
     let roll;
 
     useEffect(() => {
@@ -48,10 +56,9 @@ const Roller = ({ route, navigation }) => {
         try {
             // roll = diceRoller.roll("{2d20 + 5, 3d4 + 20}");
             // roll = diceRoller.roll("2d20 + 5 + 3d4 + 20[Fire]");
-            roll = diceRoller.roll(rollProp);
+            roll = diceRoller.roll(rollString);
             setRollOutput(roll.value);
             setRollOutputDetailedString(setDetailedOutput(roll));
-                        
             return roll.value;           
         } catch (e) {
             return -1;
@@ -59,37 +66,48 @@ const Roller = ({ route, navigation }) => {
     }
 
     const setDetailedOutput = (roll) => {     
-        const rollsToJSX = (rolls, label) => {            
-            return rolls.map((r, index) => {                                                            
-                return (<Text style={styles.rollOutputDetailed} key={index}>d{r.die}({label}): {r.value}</Text>);
-            });     
-        }
-        if (roll.dice) {            
-            if (Array.isArray(roll.dice)) {                
-                return roll.dice.map((d, index) => {                    
-                    if (Array.isArray(d.rolls)) {
-                        return rollsToJSX(d.rolls, d.label);
-                    } else if (d.dice) {
-                        return d.dice.map((d2, index) => {
-                            if (d2.rolls) {                                                                                                
-                                return rollsToJSX(d2.rolls, d.dice[1].label);
-                            } else if (d2.type === "number") {
-                                return (<Text style={styles.rollOutputDetailed} key={index}>Constant({d2.label}): {d2.value}</Text>);
-                            }
-                        })
-                    } else if (d.type === "number") {                        
-                        return (<Text style={styles.rollOutputDetailed} key={index}>Constant({d.label}): {d.value}</Text>);
-                    }
-                });
-                 
-            }
-        }  
+        let text = renderer.render(roll);
+        text = text.replaceAll("*", "");
+
+        return (
+            <View>
+                <Text style={styles.rollOutputDetailedTitle}>Detailed output</Text>
+                <Text style={styles.rollOutputDetailed}>{ text }</Text>
+            </View>
+        );
+
+
+        // const rollsToJSX = (rolls, label) => {            
+        //     return rolls.map((r, index) => {                                                            
+        //         return (<Text style={styles.rollOutputDetailed} key={index}>d{r.die}({label}): {r.value}</Text>);
+        //     });     
+        // }
+        // if (roll.dice) {            
+        //     if (Array.isArray(roll.dice)) {                
+        //         return roll.dice.map((d, index) => {
+        //             if (Array.isArray(d.rolls)) {
+        //                 return rollsToJSX(d.rolls, d.label);
+        //             } else if (d.dice) {
+        //                 return d.dice.map((d2, index) => {
+        //                     if (d2.rolls) {                                                                                                
+        //                         return rollsToJSX(d2.rolls, d.dice[1].label);
+        //                     } else if (d2.type === "number") {
+        //                         return (<Text style={styles.rollOutputDetailed} key={index}>Constant({d2.label}): {d2.value}</Text>);
+        //                     }
+        //                 })
+        //             } else if (d.type === "number") {                        
+        //                 return (<Text style={styles.rollOutputDetailed} key={index}>Constant({d.label}): {d.value}</Text>);
+        //             }
+        //         });
+        //     }
+        // }  
     }
 
    return (
    <View>
         <TextInput 
             style={styles.searchBar}
+            cursorColor="black"
             placeholder='roll string'
             value={rollString}
             onChangeText={(value) => {
