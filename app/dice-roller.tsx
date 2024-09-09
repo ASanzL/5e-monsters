@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import { DiceRoller, DiscordRollRenderer } from 'dice-roller-parser';
+import React from 'react';
 
 
 
@@ -31,11 +32,11 @@ const styles = StyleSheet.create({
 
 const Stack = createNativeStackNavigator();
 
-const Roller = ({ route, navigation }) => {
+const Roller = ({ route, navigation }: any) => {
     const { rollProp } = route.params ? route.params : "";    
     
     const [rollString, setRollString] = useState(rollProp ? rollProp : "");
-    const [rollOutput, setRollOutput] = useState("");
+    const [rollOutput, setRollOutput] = useState(0);
     const [rollOutputDetailed, setRollOutputDetailed] = useState([]);
     const [rollOutputDetailedString, setRollOutputDetailedString] = useState("");
     const isFocused = useIsFocused();
@@ -65,7 +66,7 @@ const Roller = ({ route, navigation }) => {
         }
     }
 
-    const setDetailedOutput = (roll) => {     
+    const setDetailedOutput = (roll: any) => {     
         let text = renderer.render(roll);
         text = text.replaceAll("*", "");
 
@@ -111,13 +112,13 @@ const Roller = ({ route, navigation }) => {
             placeholder='roll string'
             value={rollString}
             onChangeText={(value) => {
-                setRollOutput("");
+                setRollOutput(0);
                 setRollOutputDetailedString("");
                 setRollString(value);                
             }
         }
         />
-        <Button style={styles.searchBox} onPress={() => {
+        <Button onPress={() => {
             setRollOutput(makeRoll());            
         }
             

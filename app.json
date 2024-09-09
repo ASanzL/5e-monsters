@@ -2,7 +2,7 @@
   "expo": {
     "name": "5e monster helper",
     "slug": "dnd",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -17,7 +17,7 @@
     },
     "android": {
       "package": "com.asanzl.dnd",
-      "versionCode": 5,
+      "versionCode": 6,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#CC181F"

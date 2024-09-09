@@ -5,6 +5,8 @@ import Start from './start';
 import AddMonster from './add-monster';
 import { useState } from 'react';
 import Roller from './dice-roller';
+import React from 'react';
+import CreateMonster from './create-monster';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +33,11 @@ const App = () => {
                 name="Roller"
                 component={Roller}
                 options={{ title: "Roll dice" }}
+                />
+                <Stack.Screen
+                name="CreateMonster"
+                component={CreateMonster}
+                options={{ title: "Create new monster" }}
                 />
             </Stack.Navigator>
         </NavigationContainer>

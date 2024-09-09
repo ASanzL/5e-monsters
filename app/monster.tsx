@@ -1,6 +1,9 @@
 import  { Text, Image, View, StyleSheet, Button, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { IMonster, MonsterAction } from './monster-interface';
+import React from 'react';
+import { useIsFocused } from '@react-navigation/native';
 
 const styles = StyleSheet.create({
     main: {
@@ -53,23 +56,58 @@ const styles = StyleSheet.create({
     }
   });
 
-const Monster = ({ route, navigation }) => {
-    const { index } = route.params;
-    const [monster, setMonster] = useState();
-    const [monsters, setMonsters] = useState();
+const Monster = ({ route, navigation }: any) => {
+    // Index name of monster to to show
+    const { index, isHomebrew } = route.params;
+    // Monster to show state
+    const [monster, setMonster] = useState<IMonster>();
+    // Saved monsters on start screen
+    const [monsters, setMonsters] = useState<IMonster[]>();
+
+    const isFocused = useIsFocused();
+
+    useEffect(() => {
+        if (isFocused) {
+            // getMonster();
+            getMonsters();
+        }
+    }, [isFocused]);
     
+    // Get all monsters from api    
     const getMonster = async () => {
-        let response = await fetch('https://www.dnd5eapi.co/api/monsters/' + index);
-        response = await response.json();
-        navigation.setOptions({title: response.name })
-        setMonster(response);
+        
+        // if (isHomebrew) {            
+        //     try {
+        //         const value = await AsyncStorage.getItem('homebrew-monsters');
+        //         if (value !== null) {                    
+        //             console.log("find monster");
+        //             let monster = monsters.find((m) => m.index === index);
+        //             console.log("find monster done");
+        //             console.log("set nav", monster.name);
+        //             navigation.setOptions({title: monster.name })
+        //             console.log("set nav done");
+                    
+        //             console.log("set monster");
+        //             setMonster(monster);
+        //             console.log("done");
+                                                                
+        //         } else {
+        //             setMonsters([]);
+        //         }
+        //       } catch (error) {
+        //           // Error retrieving data
+        //         }
+        //     } else {
+        //         let apiResponse: any = await fetch('https://www.dnd5eapi.co/api/monsters/' + index);
+        //         let response: IMonster = await apiResponse.json();
+        //         navigation.setOptions({title: response.name })
+        //         setMonster(response);
+        // }
+
     }
     
-    useEffect(() => {
-        getMonster();
-        getMonsters();
-    }, []);
 
+    // Add monster to start screen
     const addMonster = async () => {
         try {
             monsters.push(monster);
@@ -83,8 +121,9 @@ const Monster = ({ route, navigation }) => {
         }
     }
 
+    // Remove monster from start screen
     const removeMonster = async () => {
-        let index = monsters.findIndex((m) => m.index === monster.index);
+        let index = monsters.findIndex((m: any) => m.index === monster?.index);
         monsters.splice(index, 1);
         try {
             await AsyncStorage.setItem(
@@ -97,6 +136,7 @@ const Monster = ({ route, navigation }) => {
         }
     }
 
+    // Get all monsters from start screen and save to state
     const getMonsters = async () => {
         try {
             const value = await AsyncStorage.getItem('monsters');
@@ -108,10 +148,43 @@ const Monster = ({ route, navigation }) => {
           } catch (error) {
             // Error retrieving data
           }
+
+          if (isHomebrew) {            
+            try {
+                const value = await AsyncStorage.getItem('homebrew-monsters');
+                if (value !== null) {                    
+                    console.log("find monster");
+                    let monster = monsters.find((m) => {
+                        console.log("find", m.index);
+                        
+                        return m.index === index
+                    });
+                    console.log("find monster done");
+                    console.log("set nav", monster.name);
+                    navigation.setOptions({title: monster.name })
+                    console.log("set nav done");
+                    
+                    console.log("set monster");
+                    setMonster(monster);
+                    console.log("done");
+                                                                
+                } else {
+                    setMonsters([]);
+                }
+              } catch (error) {
+                  // Error retrieving data
+                }
+            } else {
+                let apiResponse: any = await fetch('https://www.dnd5eapi.co/api/monsters/' + index);
+                let response: IMonster = await apiResponse.json();
+                navigation.setOptions({title: response.name })
+                setMonster(response);
+        }
     }
 
+    // Whether to show add or remove button
     const UpdateListButton = () => {
-        if (monsters.some((m) => m.index === monster.index)) {
+        if (monsters.some((m: IMonster) => m.index === monster?.index)) {
             return (
                 <Button 
                     onPress={removeMonster}
@@ -129,7 +202,9 @@ const Monster = ({ route, navigation }) => {
         }
     }
 
-    const DetailText = (props) => {
+    // Show text line, first in bold other normal
+    const DetailText = (props: any) => {
+        
         let descString = props.desc;
         if (Array.isArray(props.desc)) {
             descString = descString.join(", ");
@@ -148,7 +223,8 @@ const Monster = ({ route, navigation }) => {
         }
     }
 
-    const Line = (props) => {
+    // Line to break content
+    const Line = (props: any) => {
         if (props.hide) {
             return (<View></View>);
         } else {
@@ -158,17 +234,17 @@ const Monster = ({ route, navigation }) => {
         }
     }
 
-    const StatCell = (props) => {
-        return (
-            <View style={styles.statCell}>
-                <Text style={styles.detailTextBold}>{ props.name }</Text>
-                <Text style={styles.detailTextNormal}>{ props.value }</Text>
-            </View>
-        );
-    }
+    // const StatCell = (props: any) => {
+    //     return (
+    //         <View style={styles.statCell}>
+    //             <Text style={styles.detailTextBold}>{ props.name }</Text>
+    //             <Text style={styles.detailTextNormal}>{ props.value }</Text>
+    //         </View>
+    //     );
+    // }
     
     if(monster !== undefined) {
-        const acString = monster.armor_class[0].value + " (" + monster.armor_class[0].type + " armor)";
+        // const acString = monster.armor_class[0].value + " (" + monster.armor_class[0].type + " armor)";
         const hpString = monster.hit_points + " (" + monster.hit_points_roll + ")";
         let speedArray = [];
         for (const s in monster.speed) {
@@ -177,14 +253,16 @@ const Monster = ({ route, navigation }) => {
             speedArray.push(speedString);
         }
 
-        const getAbilityScore = (value) => {
-            const score = Math.floor((value - 10) / 2);
-            const sign =  score >= 0 ? "+" : "";
-            return { score , string: value + " (" + sign + score + ")" };
+        // Convert ability score to modifier
+        const getAbilityModifier = (score: number) => {
+            const modifier = Math.floor((score - 10) / 2);
+            const sign =  modifier >= 0 ? "+" : "";
+            return { modifier , string: score + " (" + sign + modifier + ")" };
         }
 
-        const proficienciesStringArray = (typeString) => {
-            let stringArray = [];
+        // Get a string of proficiencies
+        const proficienciesStringArray = (typeString: any) => {
+            let stringArray: string[] = [];
 
             monster.proficiencies.map((p) => {
                 let string = "";
@@ -201,15 +279,17 @@ const Monster = ({ route, navigation }) => {
             return stringArray.join(", ");
         }
 
-        const objectToString = (object) => {
-            let returnArray = [];
+        // Convert an object to a string
+        const objectToString = (object: any) => {
+            let returnArray: string[] = [];
             Object.keys(object).map((k) => {
                 returnArray.push(k + " " + object[k]);                
             });
             return returnArray.join(", ");
         }
 
-        const getActionJSX = (action) => {                        
+        // Returns the JSX for an monster action
+        const getActionJSX = (action: MonsterAction) => {                        
             if (action.name === "Multiattack" || action.dc) {
                 return (
                 <View style={styles.multiattack}>
@@ -231,8 +311,9 @@ const Monster = ({ route, navigation }) => {
             );
             
         }
-
-        const getHPJSX = (hit_points, hit_points_roll) => {
+        
+        // Returns the JSX for an monster HP
+        const getHPJSX = (hit_points: number, hit_points_roll: string) => {
             return (
                 <TouchableOpacity style={styles.action} onPress={() => {
                     navigation.navigate('Roller', { rollProp: hit_points_roll + "[hitpoints]"
@@ -242,14 +323,13 @@ const Monster = ({ route, navigation }) => {
             </TouchableOpacity>
             );
         }
-
-        const getStatJSX = (statAbbr, statScore) => {
-            let abilityScore = getAbilityScore(statScore);
-            console.log(abilityScore.score);
-            
+        
+        // Returns the JSX for an monster stat
+        const getStatJSX = (statAbbr: string, statScore: number) => {
+            let abilityScore = getAbilityModifier(statScore);            
             return (
                 <TouchableOpacity style={styles.statCell} onPress={() => {
-                    navigation.navigate('Roller', { rollProp: "1d20 + " + abilityScore.score
+                    navigation.navigate('Roller', { rollProp: "1d20 + " + abilityScore.modifier
                      });
                 }}>
                 <Text style={styles.detailTextBold}>{ statAbbr }</Text>
@@ -265,11 +345,11 @@ const Monster = ({ route, navigation }) => {
                 <UpdateListButton />
                 <View style={styles.main}>
                     <Text style={styles.title}>{ monster.name }</Text>
-                    <Text style={styles.detailText}>{ monster.size } { monster.type }, { monster.alignment }</Text>
+                    <Text>{ monster.size } { monster.type }, { monster.alignment }</Text>
 
                     <Line />
 
-                    <DetailText title="Armor class" desc={acString}  />
+                    {/* <DetailText title="Armor class" desc={acString}  /> */}
                     { getHPJSX(monster.hit_points, monster.hit_points_roll) }
                     <DetailText title="Speed" desc={speedArray.join(", ")}  />
 
@@ -302,7 +382,7 @@ const Monster = ({ route, navigation }) => {
 
                     {
                         monster.special_abilities.map(ability =>
-                            <DetailText title={ ability.name === "Legendary Resistance" ? ability.name + " (" + ability.usage.times + " " + ability.usage.type + ")" : ability.name } desc={ ability.desc } />
+                            <DetailText title={ ability.name === "Legendary Resistance" ? ability.name + " (" + ability?.usage?.times + " " + ability?.usage?.type + ")" : ability.name } desc={ ability.desc } />
                         )
                     }
 
@@ -310,7 +390,7 @@ const Monster = ({ route, navigation }) => {
                     <Line />
 
                     {
-                        monster.actions.map(action => getActionJSX(action))
+                        // monster.actions.map(action => getActionJSX(action))
                     }
                     
                     { monster.legendary_actions.length > 0 && <Text style={styles.titleSmall}>Legendary Action</Text> }

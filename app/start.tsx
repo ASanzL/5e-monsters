@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import React from 'react';
+import { IMonster } from './monster-interface';
 
 
 const styles = StyleSheet.create({
@@ -36,9 +38,9 @@ const styles = StyleSheet.create({
 
 const Stack = createNativeStackNavigator();
 
-const Start = ({navigation}) => {
+const Start = ({navigation}: any) => {
     
-    const [monsters, setMonsters] = useState([]);
+    const [monsters, setMonsters] = useState<IMonster[]>([]);
     const isFocused = useIsFocused();
     
     useEffect(() => {
@@ -48,32 +50,53 @@ const Start = ({navigation}) => {
     }, [isFocused]);
 
     const getMonsters = async () => {
+        let monsters: IMonster[] = [];
+        // Get official monsters
         try {
-            let value = await AsyncStorage.getItem('monsters');
+            let storageValue = await AsyncStorage.getItem('monsters');
+            storageValue = storageValue ? storageValue : "";
             
-            value = JSON.parse(value);
-            value.sort((a, b) => {                
-                return a.index.localeCompare(b.index);
-            });
+            let value: IMonster[] = JSON.parse(storageValue);
                         
             if (value !== null) {
-              setMonsters(value);
+                monsters = monsters.concat(value);
             } else {
                 
             }
           } catch (error) {
             // Error retrieving data
           }
+
+        // Get homebrew monsters
+        try {
+            let storageValue = await AsyncStorage.getItem('homebrew-monsters');
+            storageValue = storageValue ? storageValue : "";
+            
+            let value: IMonster[] = JSON.parse(storageValue);
+                        
+            if (value !== null) {   
+                monsters = monsters.concat(value);
+            } else {
+                
+            }
+          } catch (error) {
+            // Error retrieving data
+          }
+
+          monsters.sort((a: IMonster, b: IMonster) => {                
+            return a.index.localeCompare(b.index);
+        });
+        setMonsters(monsters);
     }
     
     if (monsters !== undefined && monsters.length !== 0) {
         return (
             <View>
-            <Button style={styles.searchBox} onPress={() => navigation.navigate('Roller' )} title='Roll dice' />
-            <Button style={styles.searchBox} onPress={() => navigation.navigate('AddMonster' )} title='Add monster' />
+            <Button onPress={() => navigation.navigate('Roller' )} title='Roll dice' />
+            <Button onPress={() => navigation.navigate('AddMonster' )} title='Add monster' />
             <ScrollView>
                 {monsters.map((monster) => 
-                <TouchableOpacity style={styles.monsterBox} onPress={() => navigation.navigate('Monster', { index: monster.index} )} key={monster.index}>
+                <TouchableOpacity style={styles.monsterBox} onPress={() => navigation.navigate('Monster', { index: monster.index, isHomebrew: true } )} key={monster.index}>
                     <Text style={styles.monsterName}>{monster.name}</Text>
                     <Text style={styles.monsterCr}>CR: {monster.challenge_rating}</Text>
                 </TouchableOpacity>
